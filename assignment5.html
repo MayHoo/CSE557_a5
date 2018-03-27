@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>557A5 Story Telling</title>
+		<style type="text/css">
+			* {
+				margin: 20px;
+			}
+			/* modified based on CSS tutorial: */
+			/* https://www.webmaster-source.com/2012/04/24/pure-css-blockquote-styling/ */
+			blockquote {
+				font-family: Georgia, serif;
+				font-size: 16px;
+				font-style: italic;
+				width: 600px;
+				margin: 0.25em 0;
+				margin-top: 20px;
+				padding: 0.35em 40px;
+				line-height: 1.45;
+				position: relative;
+				color: #383838;
+			}
+			a {
+				margin: 0;
+			}
+			blockquote:before {
+				display: block;
+				padding-left: 10px;
+				content: "\201C";
+				font-size: 80px;
+				position: absolute;
+				left: -20px;
+				top: -20px;
+				color: #7a7a7a;
+			}
+			
+			blockquote cite {
+				color: #999999;
+				font-size: 14px;
+				display: block;
+				margin-top: 15px;
+			}
+			
+			blockquote cite:before {
+				content: "\2014 \2009";
+			}
+			
+			#remark {
+				font-size: 14px;
+				color: #383838;
+				margin-bottom: 5px;
+				margin-top: 0px;
+				margin-left:40px; 
+			}
+			#small {
+				font-size: 12px;
+				color: #383838;
+				margin-bottom: 10px;
+				margin-top: 10px;
+			}
+			img {
+				margin-top: 0;
+				margin-bottom: 0;
+			}
+			#article {
+				margin-left: 40px;
+				margin-bottom: 0;
+				width: 600px;
+			}
+		</style>
+
+        <script src="https://d3js.org/d3.v4.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.7.1/d3-tip.min.js"></script>
+    </head>
+    <body>
+		<h1>Children drawing more women in science</h1>
+		<p id = small>
+			By Mary Halton</br>
+			Science reporter, BBC News</br>
+			</br>
+			<a href=http://www.bbc.com/news/science-environment-43460528 title="BBC: Children drawing more women in science">20 March 2018</a>
+		</p>
+			<img id = "logoimage" src="https://ichef.bbci.co.uk/news/660/cpsprodpb/9E14/production/_100486404_vasiliachristidou-59g.jpg"  alt="The Draw A Scientist Test has been used in schools around the world" /></br>
+		<p id = small>
+			The Draw A Scientist Test has been used in schools around the world.
+		</p>
+		<blockquote cite="http://www.bbc.com/news/science-environment-43460528">
+			The "Draw A Scientist" test has been administered by sociologists in various studies since the 1960s.</br>
+			According to the recent result, children in the US are drawing more women scientists than in previous decades.</br>
+		</blockquote>
+		<p id = article>
+			In the last 40 years, the incerease in the number of women in science is obvious to us all. </br>
+			The following stacked chart shows the change of number in years. Different color area refer to different science field.</br>
+		</p>
+		
+		<script type="text/javascript">
+		
+		var margin = {top: 30, right: 40, bottom: 30, left: 40},
+            width = 600 - margin.left - margin.right,
+            height = 400 - margin.top - margin.bottom;
+        var svgWidth = 600;
+        var svgHeight = 400;
+		
+		var yearlist = [1973,1977,1979,1981,1983,1985,1987,1989,1991,1993,1995,1997,1999,2001,2003,2006,2008,2010];
+		var mnum = [107.2,129,136,144,149.8,159.2,162,168,168.7,166.9,165.1,173.3,175.8,175,180.7,182.7,182.3,189.6];
+		var wnum = [10.7,16.5,19.4,23.1,26.5,31.1,34,38.7,41.9,46.9,52.4,59.2,64.4,70.5,78.7,90.1,94.2,105.2];
+
+		
+		var svg = d3.select("body").append("svg")
+					.attr("id","allpos")
+					.attr("width", svgWidth)
+					.attr("height", svgHeight)
+					.append("g")
+					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		
+		var tool_tip = d3.tip()
+						.attr("class", "d3-tip")
+						.html("<div id='tipDiv'></div>");
+
+		svg.call(tool_tip);
+		
+		var xmax, xmin, ymin, ymax;
+				
+		d3.csv("https://raw.githubusercontent.com/MayHoo/CSE557_a5/master/allpos.csv",function(error,data){		
+			if(error){
+				console.log(error);
+			}
+			console.log(data);	
+				
+			var keys = [];
+			for(key in data[0]) {
+				if(key != "Year"){
+					keys.push(key);
+				}
+			}
+			console.log(keys);	
+				
+			var fieldstack = d3.stack()
+						.keys(keys)
+						.order(d3.stackOrderNone)
+						.offset(d3.stackOffsetNone);
+
+			var layers = fieldstack(data);
+				
+			xmax = d3.max(data, function(d) {
+				return d.Year;
+			});				
+			//console.log(xmax);
+			xmin = d3.min(data, function(d) {
+				return d.Year;
+			});				
+			//console.log(xmin);			
+			ymin = d3.min(layers, function(l) {
+				return d3.min(l, function(d) {
+					return d[0];
+				})
+			});
+			ymax = d3.max(layers, function(l) {
+				return d3.max(l, function(d) {
+					return d[1];
+				})
+			});
+			//console.log(ymax);
+			
+			var xScale = d3.scaleLinear().domain([xmin, xmax])
+							.range([30, width-30]);
+
+			var yScale = d3.scaleLinear().domain([ymin, ymax])
+							.range([height-30, 30]);
+				
+			var area = d3.area().curve(d3.curveCardinal)
+				.x(function(d){
+					return xScale(d.data.Year);
+				})
+				.y0(function(d){
+					return yScale(d[0]);
+				})
+				.y1(function(d){
+					return yScale(d[1]);
+				});
+			
+			var color = d3.scaleOrdinal(d3.schemeCategory10).range()
+			var colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+								
+			var fielddata = [];
+			var fieldvalue = [];
+			var tipmin, tipmax, percentage;
+			function increasePercentage(tipmin, tipmax){
+				if (tipmin == 0) 
+					return "∞";
+				else 
+					return (Math.floor((tipmax-tipmin)*10000/tipmin)/100)+"%";
+			}
+
+			var tooltip = d3.select("body")
+                .append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+								
+			svg.selectAll("g")
+				.data(layers)
+				.enter()
+				.append("g")
+				.attr("fill", function(d) { 
+					return colorScale(d.key);
+				})
+			svg.selectAll("path")
+				.data(layers)
+				.enter()
+				.append("path")
+				.attr("d", area)
+				.attr("fill", function(d) {
+					//console.log(d);
+					return colorScale(d.key);
+				});
+			
+			svg.selectAll("path")
+				.attr("opacity", 1)
+				.on("mousemove", function(d, i) {
+					var mouseX = d3.mouse(this)[0];
+					var invertedX = xScale.invert(mouseX);
+					var mouseY = d3.mouse(this)[1];
+					var invertedY = yScale.invert(mouseY);
+					
+					fieldvalue = [];
+					for (var j = 0; j < data.length; j++) {
+						if (i == 0)
+							fieldvalue[j] = Number(data[j].PhysicalSciences);
+						else if (i == 1)
+							fieldvalue[j] = Number(data[j].Mathematics);
+						else if (i == 2)
+							fieldvalue[j] = Number(data[j].ComputerSciences);
+						else if (i == 3)
+							fieldvalue[j] = Number(data[j].LifeSciences);
+						else if (i == 4)
+							fieldvalue[j] = Number(data[j].Psychology);
+						else if (i == 5)
+							fieldvalue[j] = Number(data[j].SocialSciences);
+						else
+							fieldvalue[j] = Number(data[j].Engineering);	
+					}	
+					fielddata=[];
+					for(var k = 0; k < fieldvalue.length;k++){
+						fielddata.push([yearlist[k],fieldvalue[k]])
+					}
+					//console.log(fielddata);
+					
+					tipmin = d3.min(fieldvalue);
+					tipmax = d3.max(fieldvalue);
+					//console.log(fieldvalue);
+
+					percentage = increasePercentage(tipmin, tipmax);
+					//console.log(tipmin + " " + tipmax);
+					
+					tooltip.html("Field: " +keys[i]+
+							"<br>Year: " + parseInt(invertedX)+
+							"<br>Value: " + (Math.floor(yScale.invert(mouseY)*100)/100) + 
+							"<br># in 1973: " + tipmin + " , # in 2010: " + tipmax + 
+							"<br>% increase: " + percentage
+							)  
+						.style("left", 630 + "px")
+						.style("top", 785 + "px")
+						.style("position", "absolute")
+						.style("opacity", .9)
+						.style("width", 100)
+						.style("height", "auto")
+						.style("border-style", "solid") 
+						.style("border-width", "1px")
+						.style("background-color", "white")
+						.style("border-radius", "5px");					
+			
+					svg.selectAll("path")
+						.attr("opacity", function(d, j) {
+							if(j != i) {
+								return 0.5;
+							}
+							else {
+								return 1;
+							}
+						});				
+				})      
+				.on("mouseout", function(d) {
+					svg.selectAll("path")
+						.attr("opacity", 1);
+					tooltip.style("opacity", 0);
+				})
+				.on("mousedown", function(d, i){
+					tool_tip.show()
+						.style("left", 550 + "px")
+						.style("top", 780 + "px")
+						.style("position", "absolute")
+						.style("opacity", .9);
+					var tipSVG = d3.select("#tipDiv")
+								.append("svg")
+								.attr("width", 600)
+								.attr("height", 400);
+									
+					var width = 400;
+					var height = 300;
+					var padding = { top: 50, right: 0, bottom: 0, left: 30 };
+					
+					var xtipScale = d3.scaleLinear()
+									.domain([1973, 2010])
+									.range([0, width - padding.left - padding.right]);
+					var ytipScale = d3.scaleLinear()
+									.domain([0, tipmax])
+									.range([height - padding.top - padding.bottom, 0]);
+					var xtipAxis = d3.axisBottom()
+								.scale(xtipScale);
+					var ytipAxis = d3.axisLeft()
+								.scale(ytipScale);
+					console.log(i);
+					var linePath = d3.line()
+									.x(function(d){ return xtipScale(d[0]) })
+									.y(function(d){	return ytipScale(d[1]) });
+					tipSVG.append('g')
+						.append('path')
+						.attr('class', 'line-path')
+						.attr('transform', 'translate(' + padding.left + ',' + padding.top + ')')
+						.attr('d', linePath(fielddata))
+						.attr('fill', 'none')
+						.attr('stroke-width', 3)
+						.attr('stroke', color[i]);
+					tipSVG.append('g')
+						.selectAll('circle')
+						.data(fielddata)
+						.enter()
+						.append('circle')
+						.attr('r', 5)
+						.attr('transform', function(d){
+							return 'translate(' + (xtipScale(d[0]) + padding.left) + ',' + (ytipScale(d[1]) + padding.top) + ')'
+						})
+						.attr('fill', color[i]);
+					tipSVG.append('g')
+						.attr('class', 'axis')
+						.attr('transform', 'translate(' + padding.left + ',' + (height - padding.bottom) + ')')
+						.call(xtipAxis);
+					tipSVG.append('g')
+						.attr('class', 'axis')
+						.attr('transform', 'translate(' + padding.left + ',' + padding.top + ')')
+						.call(ytipAxis);
+				})
+				.on("mouseup", function(d){
+					//tool_tip.style("opacity", 0);
+					d3.selectAll("#tipDiv").select("*").remove();
+				})
+				
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate(0," + (height-30) + ")")
+				.call(d3.axisBottom(xScale));
+			svg.append("g")
+				.attr("class", "axis")
+				.attr("transform", "translate(30,0)")
+				.call(d3.axisLeft(yScale));
+		})		
+		
+		document.write('<p id = "remark">Move mouse over the chart to check the detailed data for certain field.</br>');
+		document.write('Press mouse on an area to show the increase of number in that field. (Line Chart)</br>');
+		document.write('(Data reported in thousands.)</p>');
+		document.write('<p></p>');
+		document.write("<blockquote cite='http://www.bbc.com/news/science-environment-43460528'>");
+		document.write("When asked to draw a scientist, less than one per cent of children in the 1960s and 1970s drew a woman. This rose to 28% between the 1980s and present day.</br>");
+		document.write(	"However, children are still far more likely to draw a traditionally male figure when asked to depict a scientist. </br>");
+		document.write( ' "The fact that children are still drawing more male than female scientists reflects their environment," said David Miller, the lead author of the study. "Given the underrepresentation of women we observe in several science fields, we should not except equal numbers. Encouragingly though, we can see that the stereotypes of children change over time."</blockquote>');
+		document.write( "<p id = article>Although the number of female scientists has been increasing, </br>");
+		document.write( "men still have dominance in the area.</br></br></p>" );
+							
+		var svg1 = d3.select("body").append("svg")
+					.attr("id","yearline")
+					.attr("width", svgWidth)
+					.attr("height", 200)
+					.append("g")
+					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+					
+		var tipPie = d3.tip()
+						.attr("class", "d3-tip")
+						.html("<div id='tipPie'></div>");
+		
+		svg1.call(tipPie);
+		
+		d3.csv("https://raw.githubusercontent.com/MayHoo/CSE557_a5/master/gender.csv",function(error,gendata){		
+			if(error){
+				console.log(error);
+			}
+			console.log(gendata[1]);
+			
+			var keys = [];
+			for(key in gendata[0]) {
+				if(key != "Year"){
+					keys.push(key);
+				}
+			}
+			console.log(keys);	
+						
+			svg1.selectAll("line")
+				.data(gendata)
+				.enter()
+				.append("line")
+				.attr("x1", margin.left)
+				.attr("y1", margin.top)
+				.attr("x2", 450)
+				.attr("y2", margin.top)
+				.style("stroke","black")
+				.style("stroke-width","2")					
+								
+			var tooltip = d3.select("body")
+                .append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+				
+			//var pie;
+			//pie chart are developed base on:
+			//https://greenmzc.github.io/2016/11/07/D3-js%E4%B8%8A%E6%89%8B%E2%80%94%E2%80%94%E9%A5%BC%E7%8A%B6%E5%9B%BE/
+			var piedata = [];
+			
+			var outerRadius = (500 - margin.left) / 4;
+			var innerRadius = 0;
+			var arc = d3.arc()
+						.outerRadius(outerRadius)
+						.innerRadius(innerRadius);
+			//var invertedX = xyearScale.invert(d3.event.pageX);	
+			var xyearScale = d3.scaleLinear()
+								.domain([1973, 2010])
+								.range([margin.left, 450]);
+			var yselected;
+			var mestimate;
+			var westimate;
+			
+			svg1.append('g')
+				.selectAll('circle')
+				.data(gendata)
+				.enter()
+				.append('circle')
+				.attr('r', 6)
+				.attr('transform', function(d){
+					return 'translate(' + (xyearScale(d.Year)) + ',' + margin.top + ')'
+				})
+				.attr('fill', 'rgb(0, 0, 0)');
+			svg1.append('g')
+				.selectAll('circle')
+				.data(gendata)
+				.enter()
+				.append('text')
+				.attr('transform', function(d){
+					return 'translate(' + (xyearScale(d.Year)) + ',' + (margin.top + 20) + '), rotate(45)'
+				})
+				.text(function(d) {return d.Year})
+				//.attr('transform', 'rotate(7)')
+			svg1.append('g')
+				.selectAll('circle')
+				.data(gendata)
+				.enter()
+				.append('rect')
+				.attr("x", margin.left)
+				.attr("y", margin.top - 20)
+				.attr("width", 450 - margin.left)
+				.attr("height", 50)
+				.style("fill", 'rgb(255, 0, 0)')
+				.style("opacity", 0)
+				.on("mousemove", function(d) {
+					yselected = (xyearScale.invert(d3.event.pageX-100));
+					for (var i = 1;i<gendata.length; i++){
+						if (yearlist[i] >= yselected) {
+							mestimate = mnum[i-1] + (mnum[i] - mnum[i-1])*(yselected - yearlist[i-1])/ (yearlist[i] - yearlist[i-1]);
+							westimate = wnum[i-1] + (wnum[i] - wnum[i-1])*(yselected - yearlist[i-1])/ (yearlist[i] - yearlist[i-1]);
+							break;
+						}
+						
+					}
+					
+					tooltip.html("Year: " + (Math.round(yselected)) +
+							"<br># of Males: " + (Math.round(mestimate*100)/100) + 
+							"<br># of Females: " + (Math.round(westimate*100)/100)
+						)
+						.style("left", (d3.event.pageX + 20) + "px")
+						.style("top", (d3.event.pageY + 20) + "px")
+						.style("position", "absolute")
+						.style("opacity", .9)
+						.style("width", 100)
+						.style("height", "auto")
+						.style("border-style", "solid") 
+						.style("border-width", "1px")
+						.style("background-color", "white")
+						.style("border-radius", "5px");	
+											
+					piedata[0] = mestimate;
+					piedata[1] = westimate;
+					console.log(piedata);
+					var pie = d3.pie(piedata);
+										
+					console.log(pie(piedata));
+					
+					tipPie.show()
+						.style("left", 600 + "px")
+						.style("top", 1500 + "px")
+						.style("position", "absolute")
+						.style("opacity", .9);
+					var pieSVG = d3.select("#tipPie")
+								.append("svg")
+								.attr("width", 800)
+								.attr("height", 800);
+	
+					var arcs = pieSVG.selectAll('g')
+								.data(pie(piedata))
+								.enter()
+								.append('g')
+								.attr('transform', 'translate(' + 150 + ',' + 150 + ')');
+					var colors = ["#1f77b4", "#d62728"];
+					
+					arcs.append('path')
+						.attr('fill', function(d, i){
+							return colors[i];
+						})
+						.attr('d', function(d){
+							return arc(d);
+						});
+					arcs.append('text')
+						.attr('transform', function(d, i){
+							var x = arc.centroid(d)[0] * 1.5;
+							var y = arc.centroid(d)[1] * 1.5;
+							return 'translate(' + x + ', ' + y + ')';
+						})
+						.attr('text-anchor', 'middle')
+						.text(function(d, i){
+							var percent = piedata[i] / d3.sum(piedata) * 100;
+							return keys[i] + ' ' + percent.toFixed(1) + '%';
+						})
+				})
+				.on("mouseout", function(d) {
+					tooltip.style("opacity", 0);
+					d3.selectAll("#tipPie").select("*").remove();
+				})
+			
+		})
+		
+				
+		document.write("<p id = 'remark'>");
+		document.write("Move mouse over the yearbar to show the percentage change of female in sciense.(Pie Chart)</br>");
+		document.write("Those dots on the yearbar imply actual data.</br>");
+		document.write("Values between them are estimated by ratio.</br>");
+		document.write("(Data reported in thousands.)");
+		document.write("</p>");
+		</script>
+		</br>Dataset: <a href=https://www.nsf.gov/statistics/seind14/content/chapter-5/at05-15.pdf title="Women in Science and Engineering Statistics">Science, engineering, and health doctorate holders employed in academia (1973-2010)</a></br>	
+    </body>
+</html>
