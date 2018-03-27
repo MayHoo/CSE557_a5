@@ -333,7 +333,8 @@
 		})		
 
 		document.write("<blockquote cite='http://www.bbc.com/news/science-environment-43460528'>");
-		document.write(	"However, children are still far more likely to draw a traditionally male figure when asked to depict a scientist. </blockquote>")
+		document.write(	"However, children are still far more likely to draw a traditionally male figure when asked to depict a scientist. </br>")
+		document.write( ' "The fact that children are still drawing more male than female scientists reflects their environment," said David Miller, the lead author of the study. "Given the underrepresentation of women we observe in several science fields, we should not except equal numbers. Encouragingly though, we can see that the stereotypes of children change over time."</blockquote>')
 		document.write( "Although the number of female scientists has been increasing, </br>");
 		document.write( "men still have dominance in the area.</br>" );
 		
@@ -388,6 +389,8 @@
                 .style("opacity", 0);
 				
 			//var pie;
+			//pie chart are developed base on:
+			//https://greenmzc.github.io/2016/11/07/D3-js%E4%B8%8A%E6%89%8B%E2%80%94%E2%80%94%E9%A5%BC%E7%8A%B6%E5%9B%BE/
 			var piedata = [];
 			
 			var outerRadius = (500 - margin.left) / 4;
@@ -469,14 +472,14 @@
 					
 					tipPie.show()
 						.style("left", 600 + "px")
-						.style("top", 900 + "px")
+						.style("top", 1100 + "px")
 						.style("position", "absolute")
 						.style("opacity", .9);
 					var pieSVG = d3.select("#tipPie")
 								.append("svg")
 								.attr("width", 800)
 								.attr("height", 800);
-					
+	
 					var arcs = pieSVG.selectAll('g')
 								.data(pie(piedata))
 								.enter()
