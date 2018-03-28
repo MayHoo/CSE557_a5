@@ -499,8 +499,8 @@
 						.style("opacity", .9);
 					var pieSVG = d3.select("#tipPie")
 								.append("svg")
-								.attr("width", 800)
-								.attr("height", 800);
+								.attr("width", 400)
+								.attr("height", 400);
 	
 					var arcs = pieSVG.selectAll('g')
 								.data(pie(piedata))
